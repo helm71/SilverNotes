@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UserNotifications
 @preconcurrency import WatchConnectivity
 import SwiftData
 
@@ -121,7 +122,14 @@ extension WatchConnectivityService: WCSessionDelegate {
     }
 
     nonisolated func session(_ session: WCSession, didReceive file: WCSessionFile) {
-        print("[WatchConnectivity] Received file: \(file.fileURL.lastPathComponent), metadata: \(String(describing: file.metadata))")
+        print("[WatchConnectivity] ✅ Received file: \(file.fileURL.lastPathComponent)")
+        // Immediate notification so we know the file arrived regardless of app state
+        let content = UNMutableNotificationContent()
+        content.title = "🎙 Audio ontvangen van Watch"
+        content.body = "Bezig met verwerken..."
+        content.sound = .default
+        let req = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(req, withCompletionHandler: nil)
 
         // Copy the file before the system cleans it up
         let dest = FileManager.default.temporaryDirectory
