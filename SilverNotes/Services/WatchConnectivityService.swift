@@ -145,9 +145,7 @@ final class WatchConnectivityService: NSObject, ObservableObject {
                 UNUserNotificationCenter.current().add(req, withCompletionHandler: nil)
 
                 // Badge op het app-icoon bijwerken
-                UNUserNotificationCenter.current().setBadgeCount(noteCount) { error in
-                    if let error { print("[Badge] Error: \(error)") }
-                }
+                NotificationService.shared.updateBadge(count: noteCount)
             }
         }
     }

@@ -45,6 +45,12 @@ struct NoteListView: View {
             .sheet(isPresented: $showNewNote) {
                 NoteEditorView()
             }
+            .onAppear {
+                NotificationService.shared.updateBadge(count: notes.count)
+            }
+            .onChange(of: notes.count) { _, newCount in
+                NotificationService.shared.updateBadge(count: newCount)
+            }
             .confirmationDialog("Verwijder \(selectedNotes.count) notitie(s)?", isPresented: $showDeleteConfirm) {
                 Button("Verwijder", role: .destructive) { deleteSelected() }
                 Button("Annuleer", role: .cancel) {}

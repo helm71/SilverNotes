@@ -71,6 +71,12 @@ final class NotificationService: NSObject {
         }
     }
 
+    func updateBadge(count: Int) {
+        UNUserNotificationCenter.current().setBadgeCount(count) { error in
+            if let error { print("[Badge] Error: \(error)") }
+        }
+    }
+
     func cancelNotification(identifier: String) {
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
         center.removeDeliveredNotifications(withIdentifiers: [identifier])
