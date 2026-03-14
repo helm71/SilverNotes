@@ -1,6 +1,6 @@
 import Foundation
 import Combine
-import WatchConnectivity
+@preconcurrency import WatchConnectivity
 import SwiftData
 
 final class WatchConnectivityService: NSObject, ObservableObject {

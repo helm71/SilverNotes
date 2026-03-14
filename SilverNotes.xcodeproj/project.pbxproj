@@ -558,7 +558,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BKTDN4485W;
-				INFOPLIST_FILE = SilverNotesWatchComplication/Info.plist;
+				INFOPLIST_FILE = SilverNotesWatchComplicationInfo.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -586,7 +586,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BKTDN4485W;
-				INFOPLIST_FILE = SilverNotesWatchComplication/Info.plist;
+				INFOPLIST_FILE = SilverNotesWatchComplicationInfo.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
