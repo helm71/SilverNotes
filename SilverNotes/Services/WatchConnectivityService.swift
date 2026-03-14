@@ -1,12 +1,15 @@
 import Foundation
 import Combine
-import WatchConnectivity
+@preconcurrency import WatchConnectivity
 import SwiftData
 
 final class WatchConnectivityService: NSObject, ObservableObject {
     static let shared = WatchConnectivityService()
 
     @Published var isReachable = false
+
+    /// Set by SilverNotesApp.init() so the service can create ModelContexts on demand.
+    var modelContainer: ModelContainer?
 
     private override init() {
         super.init()
@@ -42,11 +45,16 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     func processReceivedAudio(url: URL, context: ModelContext) {
         Task {
             let authorized = await SpeechService.shared.requestAuthorization()
-            guard authorized else { return }
+            guard authorized else {
+                print("[WatchConnectivity] Speech not authorized")
+                return
+            }
 
             do {
                 let locale = AppSettings.shared.speechLocale
                 let transcript = try await SpeechService.shared.transcribe(audioURL: url, localeIdentifier: locale)
+                print("[WatchConnectivity] Transcript: \(transcript)")
+
                 let note = Note(content: transcript, inputType: .voice, isProcessed: false)
                 note.audioFileName = url.lastPathComponent
 
@@ -78,7 +86,9 @@ final class WatchConnectivityService: NSObject, ObservableObject {
 }
 
 extension WatchConnectivityService: WCSessionDelegate {
-    nonisolated func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+    nonisolated func session(_ session: WCSession,
+                              activationDidCompleteWith activationState: WCSessionActivationState,
+                              error: Error?) {
         DispatchQueue.main.async { self.isReachable = session.isReachable }
     }
 
@@ -92,14 +102,26 @@ extension WatchConnectivityService: WCSessionDelegate {
     }
 
     nonisolated func session(_ session: WCSession, didReceive file: WCSessionFile) {
-        let tempURL = FileManager.default.temporaryDirectory
+        guard let metadata = file.metadata, metadata["type"] as? String == "voiceNote" else { return }
+
+        // Copy the file before the system cleans it up
+        let dest = FileManager.default.temporaryDirectory
             .appendingPathComponent("watch-\(UUID().uuidString).m4a")
         do {
-            try FileManager.default.copyItem(at: file.fileURL, to: tempURL)
-            NotificationCenter.default.post(name: .watchAudioReceived, object: tempURL)
+            try FileManager.default.copyItem(at: file.fileURL, to: dest)
+            print("[WatchConnectivity] Received audio: \(dest.lastPathComponent)")
         } catch {
-            print("[WatchConnectivity] File receive error: \(error)")
+            print("[WatchConnectivity] Copy error: \(error)")
+            return
         }
+
+        // Process immediately using the stored ModelContainer
+        guard let container = modelContainer else {
+            print("[WatchConnectivity] No modelContainer set — cannot process audio")
+            return
+        }
+        let context = ModelContext(container)
+        processReceivedAudio(url: dest, context: context)
     }
 }
 
