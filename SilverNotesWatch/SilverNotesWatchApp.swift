@@ -28,7 +28,9 @@ struct SilverNotesWatchApp: App {
                 }
             }
             .onOpenURL { url in
-                if url.scheme == "silvernotes" && url.host == "record" {
+                print("[SilverNotes] onOpenURL called: \(url.absoluteString)")
+                // Accept any silvernotes:// URL → go straight into recording
+                if url.scheme == "silvernotes" {
                     appState.launchIntoRecording = true
                 }
             }
