@@ -6,8 +6,57 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DD0002002F7DDDDD0002DDDD /* SilverNotesWatch.app in Embed Watch Apps */ = {isa = PBXBuildFile; fileRef = BB0001002F7BBBBB0001BBBB /* SilverNotesWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		EE0002002F7EEEEE0002EEEE /* SilverNotesWatchComplication.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CC0001002F7CCCCC0001CCCC /* SilverNotesWatchComplication.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DD0004002F7DDDDD0004DDDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 88B54C282F655B8E00273E65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB0002002F7BBBBB0002BBBB;
+			remoteInfo = SilverNotesWatch;
+		};
+		EE0004002F7EEEEE0004EEEE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 88B54C282F655B8E00273E65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC0002002F7CCCCC0002CCCC;
+			remoteInfo = SilverNotesWatchComplication;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DD0001002F7DDDDD0001DDDD /* Embed Watch Apps */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				DD0002002F7DDDDD0002DDDD /* SilverNotesWatch.app in Embed Watch Apps */,
+			);
+			name = "Embed Watch Apps";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EE0001002F7EEEEE0001EEEE /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				EE0002002F7EEEEE0002EEEE /* SilverNotesWatchComplication.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		88B54C302F655B8E00273E65 /* SilverNotes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SilverNotes.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB0001002F7BBBBB0001BBBB /* SilverNotesWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SilverNotesWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC0001002F7CCCCC0001CCCC /* SilverNotesWatchComplication.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SilverNotesWatchComplication.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +65,34 @@
 			path = SilverNotes;
 			sourceTree = "<group>";
 		};
+		BB0006002F7BBBBB0006BBBB /* SilverNotesWatch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SilverNotesWatch;
+			sourceTree = "<group>";
+		};
+		CC0006002F7CCCCC0006CCCC /* SilverNotesWatchComplication */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SilverNotesWatchComplication;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		88B54C2D2F655B8E00273E65 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB0004002F7BBBBB0004BBBB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC0004002F7CCCCC0004CCCC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +106,8 @@
 			isa = PBXGroup;
 			children = (
 				88B54C322F655B8E00273E65 /* SilverNotes */,
+				BB0006002F7BBBBB0006BBBB /* SilverNotesWatch */,
+				CC0006002F7CCCCC0006CCCC /* SilverNotesWatchComplication */,
 				88B54C312F655B8E00273E65 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +116,8 @@
 			isa = PBXGroup;
 			children = (
 				88B54C302F655B8E00273E65 /* SilverNotes.app */,
+				BB0001002F7BBBBB0001BBBB /* SilverNotesWatch.app */,
+				CC0001002F7CCCCC0001CCCC /* SilverNotesWatchComplication.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,10 +132,12 @@
 				88B54C2C2F655B8E00273E65 /* Sources */,
 				88B54C2D2F655B8E00273E65 /* Frameworks */,
 				88B54C2E2F655B8E00273E65 /* Resources */,
+				DD0001002F7DDDDD0001DDDD /* Embed Watch Apps */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				DD0003002F7DDDDD0003DDDD /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				88B54C322F655B8E00273E65 /* SilverNotes */,
@@ -69,6 +148,52 @@
 			productName = SilverNotes;
 			productReference = 88B54C302F655B8E00273E65 /* SilverNotes.app */;
 			productType = "com.apple.product-type.application";
+		};
+		BB0002002F7BBBBB0002BBBB /* SilverNotesWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB0009002F7BBBBB0009BBBB /* Build configuration list for PBXNativeTarget "SilverNotesWatch" */;
+			buildPhases = (
+				BB0003002F7BBBBB0003BBBB /* Sources */,
+				BB0004002F7BBBBB0004BBBB /* Frameworks */,
+				BB0005002F7BBBBB0005BBBB /* Resources */,
+				EE0001002F7EEEEE0001EEEE /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EE0003002F7EEEEE0003EEEE /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BB0006002F7BBBBB0006BBBB /* SilverNotesWatch */,
+			);
+			name = SilverNotesWatch;
+			packageProductDependencies = (
+			);
+			productName = SilverNotesWatch;
+			productReference = BB0001002F7BBBBB0001BBBB /* SilverNotesWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		CC0002002F7CCCCC0002CCCC /* SilverNotesWatchComplication */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC0009002F7CCCCC0009CCCC /* Build configuration list for PBXNativeTarget "SilverNotesWatchComplication" */;
+			buildPhases = (
+				CC0003002F7CCCCC0003CCCC /* Sources */,
+				CC0004002F7CCCCC0004CCCC /* Frameworks */,
+				CC0005002F7CCCCC0005CCCC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				CC0006002F7CCCCC0006CCCC /* SilverNotesWatchComplication */,
+			);
+			name = SilverNotesWatchComplication;
+			packageProductDependencies = (
+			);
+			productName = SilverNotesWatchComplication;
+			productReference = CC0001002F7CCCCC0001CCCC /* SilverNotesWatchComplication.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +206,12 @@
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					88B54C2F2F655B8E00273E65 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					BB0002002F7BBBBB0002BBBB = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					CC0002002F7CCCCC0002CCCC = {
 						CreatedOnToolsVersion = 26.3;
 					};
 				};
@@ -100,12 +231,28 @@
 			projectRoot = "";
 			targets = (
 				88B54C2F2F655B8E00273E65 /* SilverNotes */,
+				BB0002002F7BBBBB0002BBBB /* SilverNotesWatch */,
+				CC0002002F7CCCCC0002CCCC /* SilverNotesWatchComplication */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		88B54C2E2F655B8E00273E65 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB0005002F7BBBBB0005BBBB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC0005002F7CCCCC0005CCCC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +269,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BB0003002F7BBBBB0003BBBB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC0003002F7CCCCC0003CCCC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DD0003002F7DDDDD0003DDDD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB0002002F7BBBBB0002BBBB /* SilverNotesWatch */;
+			targetProxy = DD0004002F7DDDDD0004DDDD /* PBXContainerItemProxy */;
+		};
+		EE0003002F7EEEEE0003EEEE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC0002002F7CCCCC0002CCCC /* SilverNotesWatchComplication */;
+			targetProxy = EE0004002F7EEEEE0004EEEE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		88B54C392F655B8F00273E65 /* Debug */ = {
@@ -256,6 +430,8 @@
 				DEVELOPMENT_TEAM = BKTDN4485W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "SilverNotes gebruikt spraakherkenning om voice notities te transcriberen.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SilverNotes gebruikt de microfoon voor het opnemen van voice notities.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -288,6 +464,8 @@
 				DEVELOPMENT_TEAM = BKTDN4485W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "SilverNotes gebruikt spraakherkenning om voice notities te transcriberen.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SilverNotes gebruikt de microfoon voor het opnemen van voice notities.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -310,6 +488,128 @@
 			};
 			name = Release;
 		};
+		BB0007002F7BBBBB0007BBBB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BKTDN4485W;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SilverNotes gebruikt de microfoon voor het opnemen van voice notities.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = marcjurriens.SilverNotes;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = marcjurriens.SilverNotes.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		BB0008002F7BBBBB0008BBBB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BKTDN4485W;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SilverNotes gebruikt de microfoon voor het opnemen van voice notities.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = marcjurriens.SilverNotes;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = marcjurriens.SilverNotes.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		CC0007002F7CCCCC0007CCCC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BKTDN4485W;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier = "com.apple.widgetkit-extension";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = marcjurriens.SilverNotes.watchkitapp.complication;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		CC0008002F7CCCCC0008CCCC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BKTDN4485W;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier = "com.apple.widgetkit-extension";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = marcjurriens.SilverNotes.watchkitapp.complication;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -327,6 +627,24 @@
 			buildConfigurations = (
 				88B54C3C2F655B8F00273E65 /* Debug */,
 				88B54C3D2F655B8F00273E65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB0009002F7BBBBB0009BBBB /* Build configuration list for PBXNativeTarget "SilverNotesWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB0007002F7BBBBB0007BBBB /* Debug */,
+				BB0008002F7BBBBB0008BBBB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CC0009002F7CCCCC0009CCCC /* Build configuration list for PBXNativeTarget "SilverNotesWatchComplication" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CC0007002F7CCCCC0007CCCC /* Debug */,
+				CC0008002F7CCCCC0008CCCC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
