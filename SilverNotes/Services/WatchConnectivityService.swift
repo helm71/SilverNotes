@@ -76,9 +76,11 @@ final class WatchConnectivityService: NSObject, ObservableObject {
                 print("[WatchConnectivity] Note saved: \(noteContent.prefix(60))")
             }
 
-            // Only extract actions if we have a real transcript
+            // Extract actions if we have a real transcript
+            var actionCount = 0
             if let text = transcript, !text.isEmpty {
                 let candidates = await LLMService.shared.extractActions(from: text, noteDate: Date())
+                actionCount = candidates.count
                 await MainActor.run {
                     note.isProcessed = true
                     for candidate in candidates {
@@ -98,6 +100,34 @@ final class WatchConnectivityService: NSObject, ObservableObject {
                 await MainActor.run {
                     note.isProcessed = true
                     try? context.save()
+                }
+            }
+
+            // Notificatie met notitietekst + badge bijwerken
+            let noteCount = (try? context.fetchCount(FetchDescriptor<Note>())) ?? 1
+            await MainActor.run {
+                // Verwijder de "bezig met verwerken" notificatie
+                UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["watch-processing"])
+
+                // Notificatie met de notitietekst
+                let notifContent = UNMutableNotificationContent()
+                notifContent.title = actionCount > 0
+                    ? "📝 Notitie + \(actionCount) actie\(actionCount == 1 ? "" : "s")"
+                    : "📝 Nieuwe notitie"
+                notifContent.body = String(noteContent.prefix(150))
+                notifContent.sound = .default
+                notifContent.badge = NSNumber(value: noteCount)
+
+                let req = UNNotificationRequest(
+                    identifier: "note-\(note.id)",
+                    content: notifContent,
+                    trigger: nil
+                )
+                UNUserNotificationCenter.current().add(req, withCompletionHandler: nil)
+
+                // Badge op het app-icoon bijwerken
+                UNUserNotificationCenter.current().setBadgeCount(noteCount) { error in
+                    if let error { print("[Badge] Error: \(error)") }
                 }
             }
         }
@@ -123,15 +153,18 @@ extension WatchConnectivityService: WCSessionDelegate {
 
     nonisolated func session(_ session: WCSession, didReceive file: WCSessionFile) {
         print("[WatchConnectivity] ✅ Received file: \(file.fileURL.lastPathComponent)")
-        // Immediate notification so we know the file arrived regardless of app state
-        let content = UNMutableNotificationContent()
-        content.title = "🎙 Audio ontvangen van Watch"
-        content.body = "Bezig met verwerken..."
-        content.sound = .default
-        let req = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
-        UNUserNotificationCenter.current().add(req, withCompletionHandler: nil)
 
-        // Copy the file before the system cleans it up
+        // Tijdelijke "verwerken" notificatie
+        let processing = UNMutableNotificationContent()
+        processing.title = "🎙 Spraaknotitie ontvangen"
+        processing.body = "Bezig met transcriberen..."
+        processing.sound = .default
+        UNUserNotificationCenter.current().add(
+            UNNotificationRequest(identifier: "watch-processing", content: processing, trigger: nil),
+            withCompletionHandler: nil
+        )
+
+        // Kopieer het bestand voordat het systeem het opruimt
         let dest = FileManager.default.temporaryDirectory
             .appendingPathComponent("watch-\(UUID().uuidString).m4a")
         do {
