@@ -10,7 +10,7 @@ struct SilverNotesApp: App {
 
     init() {
         do {
-            container = try ModelContainer(for: Note.self, Action.self)
+            container = try ModelContainer(for: Note.self, Action.self, Category.self)
             // Make the container available to WatchConnectivityService
             // so it can process incoming audio files without needing a SwiftUI context
             WatchConnectivityService.shared.modelContainer = container

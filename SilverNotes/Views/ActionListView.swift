@@ -239,6 +239,15 @@ struct ActionRowView: View {
                         .background(action.status.color.opacity(0.15))
                         .foregroundStyle(action.status.color)
                         .clipShape(Capsule())
+                    if let category = action.categoryName {
+                        Label(category, systemImage: "tag.fill")
+                            .font(.caption)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.1))
+                            .foregroundStyle(Color.blue.opacity(0.8))
+                            .clipShape(Capsule())
+                    }
                 }
             }
             Spacer()

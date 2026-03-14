@@ -79,16 +79,35 @@ final class WatchConnectivityService: NSObject, ObservableObject {
             // Extract actions if we have a real transcript
             var actionCount = 0
             if let text = transcript, !text.isEmpty {
-                let candidates = await LLMService.shared.extractActions(from: text, noteDate: Date())
+                // Fetch known categories so LLM can assign existing ones
+                let existingCategories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
+                let knownCategoryNames = existingCategories.map { $0.name }
+
+                let candidates = await LLMService.shared.extractActions(from: text, noteDate: Date(), knownCategories: knownCategoryNames)
                 actionCount = candidates.count
                 await MainActor.run {
                     note.isProcessed = true
                     for candidate in candidates {
+                        // Create category if LLM suggests a new one
+                        if let catName = candidate.category {
+                            let trimmed = catName.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if !trimmed.isEmpty {
+                                let alreadyExists = existingCategories.contains { $0.name.lowercased() == trimmed.lowercased() }
+                                if !alreadyExists {
+                                    context.insert(Category(name: trimmed))
+                                    print("[WatchConnectivity] New category created: \(trimmed)")
+                                }
+                            }
+                        }
+
                         let action = Action(
                             title: candidate.title,
                             detail: candidate.detail,
                             dueDate: candidate.dueDate,
-                            sourceNoteId: note.id
+                            sourceNoteId: note.id,
+                            categoryName: candidate.category.flatMap {
+                                $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0
+                            }
                         )
                         context.insert(action)
                         NotificationService.shared.scheduleNotification(for: action)

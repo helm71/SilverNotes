@@ -45,6 +45,7 @@ final class Action {
     var statusRaw: String
     var sourceNoteId: UUID?
     var notificationIdentifier: String
+    var categoryName: String?
 
     var status: ActionStatus {
         get { ActionStatus(rawValue: statusRaw) ?? .new }
@@ -58,7 +59,8 @@ final class Action {
         detail: String? = nil,
         dueDate: Date? = nil,
         status: ActionStatus = .new,
-        sourceNoteId: UUID? = nil
+        sourceNoteId: UUID? = nil,
+        categoryName: String? = nil
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -68,5 +70,6 @@ final class Action {
         self.statusRaw = status.rawValue
         self.sourceNoteId = sourceNoteId
         self.notificationIdentifier = "action-\(id.uuidString)"
+        self.categoryName = categoryName
     }
 }

@@ -273,15 +273,35 @@ struct NoteEditorView: View {
 
     private func processNote(note: Note, text: String) async {
         processingMessage = "Acties analyseren..."
-        let candidates = await LLMService.shared.extractActions(from: text)
+
+        // Fetch known categories to help the LLM assign existing ones
+        let existingCategories = (try? modelContext.fetch(FetchDescriptor<Category>())) ?? []
+        let knownCategoryNames = existingCategories.map { $0.name }
+
+        let candidates = await LLMService.shared.extractActions(from: text, knownCategories: knownCategoryNames)
         note.isProcessed = true
 
         for candidate in candidates {
+            // Create category if LLM suggests a new one
+            if let catName = candidate.category {
+                let trimmed = catName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty {
+                    let alreadyExists = existingCategories.contains { $0.name.lowercased() == trimmed.lowercased() }
+                    if !alreadyExists {
+                        modelContext.insert(Category(name: trimmed))
+                        print("[LLM] New category created: \(trimmed)")
+                    }
+                }
+            }
+
             let action = Action(
                 title: candidate.title,
                 detail: candidate.detail,
                 dueDate: candidate.dueDate,
-                sourceNoteId: note.id
+                sourceNoteId: note.id,
+                categoryName: candidate.category.flatMap {
+                    $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0
+                }
             )
             modelContext.insert(action)
             NotificationService.shared.scheduleNotification(for: action)

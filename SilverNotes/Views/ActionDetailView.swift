@@ -11,7 +11,9 @@ struct ActionDetailView: View {
     @State private var editedDetail: String
     @State private var editedDueDate: Date
     @State private var hasDueDate: Bool
+    @State private var editedCategoryName: String?
     @State private var showDeleteConfirm = false
+    @State private var showCategoryPicker = false
 
     init(action: Action) {
         self.action = action
@@ -19,6 +21,7 @@ struct ActionDetailView: View {
         _editedDetail = State(initialValue: action.detail ?? "")
         _editedDueDate = State(initialValue: action.dueDate ?? Date())
         _hasDueDate = State(initialValue: action.dueDate != nil)
+        _editedCategoryName = State(initialValue: action.categoryName)
     }
 
     var body: some View {
@@ -28,6 +31,28 @@ struct ActionDetailView: View {
                     TextField("Titel", text: $editedTitle)
                     TextField("Details (optioneel)", text: $editedDetail, axis: .vertical)
                         .lineLimit(3...6)
+                }
+
+                Section("Categorie") {
+                    Button {
+                        showCategoryPicker = true
+                    } label: {
+                        HStack {
+                            Label("Categorie", systemImage: "tag")
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            if let name = editedCategoryName {
+                                Text(name)
+                                    .foregroundStyle(.blue)
+                            } else {
+                                Text("Geen")
+                                    .foregroundStyle(.secondary)
+                            }
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
                 }
 
                 Section("Status") {
@@ -113,6 +138,9 @@ struct ActionDetailView: View {
                 }
                 Button("Annuleer", role: .cancel) {}
             }
+            .sheet(isPresented: $showCategoryPicker) {
+                CategoryPickerView(selectedCategoryName: $editedCategoryName)
+            }
         }
     }
 
@@ -120,6 +148,7 @@ struct ActionDetailView: View {
         action.title = editedTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         action.detail = editedDetail.isEmpty ? nil : editedDetail
         action.dueDate = hasDueDate ? editedDueDate : nil
+        action.categoryName = editedCategoryName
 
         // Reschedule notification if due date changed
         NotificationService.shared.cancelNotification(identifier: action.notificationIdentifier)
