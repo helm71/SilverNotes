@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AVFoundation
 
 struct NoteListView: View {
     @Environment(\.modelContext) private var modelContext
@@ -82,7 +83,12 @@ struct NoteListView: View {
 
     private func deleteNotes(at offsets: IndexSet) {
         for index in offsets {
-            modelContext.delete(notes[index])
+            let note = notes[index]
+            // Delete associated audio file if present
+            if let audioURL = note.audioFileURL {
+                try? FileManager.default.removeItem(at: audioURL)
+            }
+            modelContext.delete(note)
         }
         try? modelContext.save()
     }
@@ -102,12 +108,13 @@ struct NoteListView: View {
     }
 }
 
+// MARK: - Note Row
+
 struct NoteRowView: View {
     let note: Note
 
     var body: some View {
         HStack(spacing: 12) {
-            // Input type icon
             Image(systemName: note.inputType.systemImage)
                 .font(.body)
                 .foregroundStyle(.white)
@@ -133,6 +140,15 @@ struct NoteRowView: View {
                     }
                 }
             }
+
+            Spacer()
+
+            // Play button for voice notes whose audio file still exists
+            if note.inputType == .voice,
+               let audioURL = note.audioFileURL,
+               FileManager.default.fileExists(atPath: audioURL.path) {
+                AudioPlayerButton(url: audioURL)
+            }
         }
         .padding(.vertical, 4)
     }
@@ -142,6 +158,65 @@ struct NoteRowView: View {
         case .text: .blue
         case .drawing: .purple
         case .voice: .orange
+        }
+    }
+}
+
+// MARK: - Audio Player
+
+private final class AudioPlayerCoordinator: NSObject, AVAudioPlayerDelegate {
+    var onFinish: (() -> Void)?
+
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully _: Bool) {
+        DispatchQueue.main.async { self.onFinish?() }
+    }
+}
+
+struct AudioPlayerButton: View {
+    let url: URL
+
+    @State private var player: AVAudioPlayer?
+    @State private var coordinator = AudioPlayerCoordinator()
+    @State private var isPlaying = false
+
+    var body: some View {
+        Button {
+            togglePlayback()
+        } label: {
+            Image(systemName: isPlaying ? "stop.circle.fill" : "play.circle.fill")
+                .font(.title2)
+                .foregroundStyle(isPlaying ? .red : .orange)
+                .contentTransition(.symbolEffect(.replace))
+        }
+        .buttonStyle(.plain)
+        .onDisappear {
+            player?.stop()
+            player = nil
+            isPlaying = false
+        }
+    }
+
+    private func togglePlayback() {
+        if isPlaying {
+            player?.stop()
+            player = nil
+            isPlaying = false
+        } else {
+            do {
+                try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+                try AVAudioSession.sharedInstance().setActive(true)
+                let p = try AVAudioPlayer(contentsOf: url)
+                coordinator.onFinish = {
+                    isPlaying = false
+                    player = nil
+                }
+                p.delegate = coordinator
+                p.play()
+                player = p
+                isPlaying = true
+            } catch {
+                print("[Audio] Playback error: \(error)")
+            }
         }
     }
 }

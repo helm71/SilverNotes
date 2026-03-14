@@ -165,8 +165,6 @@ final class WatchConnectivityService: NSObject, ObservableObject {
             }
 
             await MainActor.run {
-                UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["watch-processing"])
-
                 let notifContent = UNMutableNotificationContent()
                 notifContent.title = actionCount > 0
                     ? "📝 Notitie + \(actionCount) actie\(actionCount == 1 ? "" : "s")"
@@ -207,19 +205,11 @@ extension WatchConnectivityService: WCSessionDelegate {
     nonisolated func session(_ session: WCSession, didReceive file: WCSessionFile) {
         print("[WatchConnectivity] ✅ Received file: \(file.fileURL.lastPathComponent)")
 
-        // Immediate "processing" notification
-        let processing = UNMutableNotificationContent()
-        processing.title = "🎙 Spraaknotitie ontvangen"
-        processing.body = "Bezig met transcriberen..."
-        processing.sound = .default
-        UNUserNotificationCenter.current().add(
-            UNNotificationRequest(identifier: "watch-processing", content: processing, trigger: nil),
-            withCompletionHandler: nil
-        )
-
-        // Copy file before the system cleans it up
-        let dest = FileManager.default.temporaryDirectory
-            .appendingPathComponent("watch-\(UUID().uuidString).m4a")
+        // Copy to Documents so the file persists (temp dir can be cleared by the OS)
+        let fileName = "watch-\(UUID().uuidString).m4a"
+        let dest = FileManager.default
+            .urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent(fileName)
         do {
             try FileManager.default.copyItem(at: file.fileURL, to: dest)
         } catch {
