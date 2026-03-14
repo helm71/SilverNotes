@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import WatchConnectivity
+import WidgetKit
 
 // Separate ObservableObject so @Published changes reliably trigger view updates
 class WatchAppState: ObservableObject {
@@ -26,6 +27,10 @@ struct SilverNotesWatchApp: App {
                     MainWatchView(openRecordingOnLaunch: .constant(false))
                         .environmentObject(connectivityHandler)
                 }
+            }
+            .onAppear {
+                // Force complication to reload with latest code
+                WidgetCenter.shared.reloadAllTimelines()
             }
             .onOpenURL { url in
                 print("[SilverNotes] onOpenURL called: \(url.absoluteString)")
