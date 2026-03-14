@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import WatchConnectivity
 
 // Separate ObservableObject so @Published changes reliably trigger view updates
