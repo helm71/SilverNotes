@@ -45,21 +45,16 @@ struct ComplicationView: View {
         }
     }
 
-    // Branded blue circle with mic + optional badge
+    // Simple mic icon — accessoryCircular draws its own circle frame
     private var circularView: some View {
-        ZStack {
-            Circle()
-                .fill(Color(red: 0.18, green: 0.42, blue: 0.78))
+        VStack(spacing: 2) {
+            Image(systemName: "mic.fill")
+                .font(.system(size: 18, weight: .semibold))
                 .widgetAccentable()
-            VStack(spacing: 0) {
-                Image(systemName: "mic.fill")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white)
-                if entry.newActionCount > 0 {
-                    Text("\(entry.newActionCount)")
-                        .font(.system(size: 9, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.9))
-                }
+            if entry.newActionCount > 0 {
+                Text("\(entry.newActionCount)")
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .widgetAccentable()
             }
         }
         .widgetURL(URL(string: "silvernotes://record"))

@@ -1,18 +1,24 @@
 import SwiftUI
 import WatchConnectivity
 
+// Separate ObservableObject so @Published changes reliably trigger view updates
+class WatchAppState: ObservableObject {
+    @Published var launchIntoRecording = false
+    static let shared = WatchAppState()
+    private init() {}
+}
+
 @main
 struct SilverNotesWatchApp: App {
-    @State private var launchIntoRecording = false
+    @StateObject private var appState = WatchAppState.shared
     @StateObject private var connectivityHandler = WatchConnectivityHandler.shared
 
     var body: some Scene {
         WindowGroup {
             Group {
-                if launchIntoRecording {
-                    // Launched from complication — go straight into recording
+                if appState.launchIntoRecording {
                     QuickRecordView {
-                        launchIntoRecording = false
+                        appState.launchIntoRecording = false
                     }
                     .environmentObject(connectivityHandler)
                 } else {
@@ -22,7 +28,7 @@ struct SilverNotesWatchApp: App {
             }
             .onOpenURL { url in
                 if url.scheme == "silvernotes" && url.host == "record" {
-                    launchIntoRecording = true
+                    appState.launchIntoRecording = true
                 }
             }
         }
