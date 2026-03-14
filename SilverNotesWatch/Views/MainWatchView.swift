@@ -4,7 +4,6 @@ struct MainWatchView: View {
     @EnvironmentObject private var handler: WatchConnectivityHandler
     @Binding var openRecordingOnLaunch: Bool
     @State private var showRecording = false
-    @State private var showActions = false
 
     var body: some View {
         NavigationStack {
@@ -29,9 +28,7 @@ struct MainWatchView: View {
                 .buttonStyle(.plain)
 
                 // Actions summary
-                Button {
-                    showActions = true
-                } label: {
+                NavigationLink(destination: ActionListWatchView()) {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Acties")
@@ -63,9 +60,6 @@ struct MainWatchView: View {
         }
         .sheet(isPresented: $showRecording) {
             VoiceRecordingWatchView()
-        }
-        .navigationDestination(isPresented: $showActions) {
-            ActionListWatchView()
         }
         .onAppear {
             if openRecordingOnLaunch {
