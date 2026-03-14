@@ -13,6 +13,7 @@ struct VoiceRecordingWatchView: View {
     @State private var recordingURL: URL?
     @State private var showResult = false
     @State private var resultMessage = ""
+    @State private var resultIsError = false
     @State private var hasMicPermission = false
 
     var body: some View {
@@ -30,7 +31,6 @@ struct VoiceRecordingWatchView: View {
 
     private var recordingView: some View {
         VStack(spacing: 20) {
-            // Animated mic indicator
             ZStack {
                 if isRecording {
                     Circle()
@@ -50,7 +50,6 @@ struct VoiceRecordingWatchView: View {
             if isRecording {
                 Text(formatDuration(recordingDuration))
                     .font(.system(.title3, design: .monospaced))
-                    .foregroundStyle(.primary)
 
                 Button {
                     stopAndSend()
@@ -64,9 +63,20 @@ struct VoiceRecordingWatchView: View {
                 }
                 .buttonStyle(.plain)
             } else {
-                Text("Tik om op te nemen")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                if !hasMicPermission {
+                    Text("Microfoon toegang vereist")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                        .multilineTextAlignment(.center)
+                } else if !handler.isPhoneReachable {
+                    Text("iPhone niet bereikbaar")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                } else {
+                    Text("Tik om op te nemen")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
 
                 Button {
                     startRecording()
@@ -86,9 +96,9 @@ struct VoiceRecordingWatchView: View {
 
     private var resultView: some View {
         VStack(spacing: 12) {
-            Image(systemName: resultMessage.contains("fout") ? "xmark.circle.fill" : "checkmark.circle.fill")
+            Image(systemName: resultIsError ? "xmark.circle.fill" : "checkmark.circle.fill")
                 .font(.system(size: 36))
-                .foregroundStyle(resultMessage.contains("fout") ? .red : .green)
+                .foregroundStyle(resultIsError ? .red : .green)
 
             Text(resultMessage)
                 .font(.caption)
@@ -106,7 +116,7 @@ struct VoiceRecordingWatchView: View {
         case .undetermined:
             Task {
                 let granted = await AVAudioApplication.requestRecordPermission()
-                hasMicPermission = granted
+                await MainActor.run { hasMicPermission = granted }
             }
         case .denied:
             hasMicPermission = false
@@ -132,7 +142,12 @@ struct VoiceRecordingWatchView: View {
             ]
 
             audioRecorder = try AVAudioRecorder(url: url, settings: settings)
-            audioRecorder?.record()
+            guard audioRecorder?.record() == true else {
+                resultMessage = "Opname kon niet starten"
+                resultIsError = true
+                showResult = true
+                return
+            }
             recordingURL = url
             isRecording = true
             recordingDuration = 0
@@ -142,7 +157,8 @@ struct VoiceRecordingWatchView: View {
                 recordingDuration += 0.1
             }
         } catch {
-            resultMessage = "Opname fout: \(error.localizedDescription)"
+            resultMessage = "Fout: \(error.localizedDescription)"
+            resultIsError = true
             showResult = true
         }
     }
@@ -157,20 +173,36 @@ struct VoiceRecordingWatchView: View {
 
         guard let url = recordingURL else {
             resultMessage = "Geen opname gevonden"
+            resultIsError = true
+            showResult = true
+            return
+        }
+
+        // Check the file actually exists and has content
+        let size = (try? FileManager.default.attributesOfItem(atPath: url.path)[.size] as? Int) ?? 0
+        guard size > 1000 else {
+            resultMessage = "Opname te kort of leeg"
+            resultIsError = true
+            showResult = true
+            return
+        }
+
+        guard handler.isPhoneReachable || WCSession.default.activationState == .activated else {
+            resultMessage = "iPhone niet verbonden"
+            resultIsError = true
             showResult = true
             return
         }
 
         handler.sendAudioToPhone(fileURL: url)
-        resultMessage = "Verzonden naar iPhone ✓"
+        resultMessage = "Verzonden naar iPhone ✓\nWordt verwerkt..."
+        resultIsError = false
         showResult = true
     }
 
     private func cleanupIfNeeded() {
         durationTimer?.invalidate()
-        if isRecording {
-            audioRecorder?.stop()
-        }
+        if isRecording { audioRecorder?.stop() }
     }
 
     private func formatDuration(_ duration: TimeInterval) -> String {
