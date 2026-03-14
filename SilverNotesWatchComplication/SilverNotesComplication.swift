@@ -79,6 +79,7 @@ struct SilverNotesComplication: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ComplicationProvider()) { entry in
             ComplicationView(entry: entry)
+                .containerBackground(for: .widget) { Color.clear }
         }
         .configurationDisplayName("SilverNotes")
         .description("Tik om direct een spraaknotitie op te nemen.")
