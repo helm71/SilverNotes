@@ -114,14 +114,29 @@ final class LLMService {
 
     private func parseActions(from json: String, referenceDate: Date) -> [ActionCandidate] {
         var cleaned = json.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Strip markdown code fences (```json ... ``` or ``` ... ```)
         if cleaned.hasPrefix("```") {
             let lines = cleaned.components(separatedBy: "\n")
-            cleaned = lines.dropFirst().dropLast().joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+            cleaned = lines.dropFirst().dropLast().joined(separator: "\n")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        guard let data = cleaned.data(using: .utf8),
-              let rawActions = try? JSONDecoder().decode([RawAction].self, from: data) else {
+
+        // Extract the JSON array even if there is surrounding prose
+        if let start = cleaned.firstIndex(of: "["), let end = cleaned.lastIndex(of: "]") {
+            cleaned = String(cleaned[start...end])
+        }
+
+        guard let data = cleaned.data(using: .utf8) else {
+            print("[LLM] parseActions: could not encode response as UTF-8")
             return []
         }
+
+        guard let rawActions = try? JSONDecoder().decode([RawAction].self, from: data) else {
+            print("[LLM] parseActions: JSON decode failed. Raw response: \(cleaned.prefix(300))")
+            return []
+        }
+
         return rawActions.compactMap { raw in
             guard !raw.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
             let detail = raw.detail.flatMap { $0 == "null" || $0.isEmpty ? nil : $0 }

@@ -43,16 +43,20 @@ final class WatchConnectivityService: NSObject, ObservableObject {
         }
     }
 
-    func processReceivedAudio(url: URL, context: ModelContext) {
-        Task {
+    // Accepts a ModelContainer so the ModelContext is created on the MainActor.
+    nonisolated func processReceivedAudio(url: URL, container: ModelContainer) {
+        // Use Task.detached so heavy work (speech + LLM) runs on a background thread
+        // and never blocks the MainActor / UI.
+        Task.detached(priority: .userInitiated) {
             print("[WatchConnectivity] Processing audio: \(url.lastPathComponent)")
 
-            // Try speech transcription
+            // --- Speech transcription (background thread) ---
             var transcript: String? = nil
             let authorized = await SpeechService.shared.requestAuthorization()
             if authorized {
                 do {
-                    let locale = AppSettings.shared.speechLocale
+                    // AppSettings is @MainActor — read it there
+                    let locale = await MainActor.run { AppSettings.shared.speechLocale }
                     transcript = try await SpeechService.shared.transcribe(audioURL: url, localeIdentifier: locale)
                     print("[WatchConnectivity] Transcript: \(transcript ?? "nil")")
                 } catch {
@@ -62,73 +66,107 @@ final class WatchConnectivityService: NSObject, ObservableObject {
                 print("[WatchConnectivity] Speech not authorized")
             }
 
-            // Always create a note — even if transcription failed
             let noteContent = transcript?.isEmpty == false
                 ? transcript!
                 : "🎙 Spraaknotitie van Apple Watch (transcriptie niet beschikbaar)"
 
-            let note = Note(content: noteContent, inputType: .voice, isProcessed: false)
-            note.audioFileName = url.lastPathComponent
-
-            await MainActor.run {
-                context.insert(note)
-                try? context.save()
+            // --- Save note on MainActor ---
+            let noteId: UUID = await MainActor.run {
+                let ctx = ModelContext(container)
+                let note = Note(content: noteContent, inputType: .voice, isProcessed: false)
+                note.audioFileName = url.lastPathComponent
+                ctx.insert(note)
+                try? ctx.save()
                 print("[WatchConnectivity] Note saved: \(noteContent.prefix(60))")
+                return note.id
             }
 
-            // Extract actions if we have a real transcript
+            // --- Extract actions (background) if we have a real transcript ---
             var actionCount = 0
             if let text = transcript, !text.isEmpty {
-                // Fetch known categories so LLM can assign existing ones
-                let existingCategories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
-                let knownCategoryNames = existingCategories.map { $0.name }
+                // Fetch known categories on MainActor
+                let knownCategoryNames: [String] = await MainActor.run {
+                    let ctx = ModelContext(container)
+                    return ((try? ctx.fetch(FetchDescriptor<Category>())) ?? []).map { $0.name }
+                }
 
-                let candidates = await LLMService.shared.extractActions(from: text, noteDate: Date(), knownCategories: knownCategoryNames)
+                // LLM extraction — background thread, takes a few seconds
+                let candidates = await LLMService.shared.extractActions(
+                    from: text,
+                    noteDate: Date(),
+                    knownCategories: knownCategoryNames
+                )
+                print("[WatchConnectivity] LLM returned \(candidates.count) candidates")
                 actionCount = candidates.count
-                await MainActor.run {
-                    note.isProcessed = true
-                    for candidate in candidates {
-                        // Create category if LLM suggests a new one
-                        if let catName = candidate.category {
-                            let trimmed = catName.trimmingCharacters(in: .whitespacesAndNewlines)
-                            if !trimmed.isEmpty {
-                                let alreadyExists = existingCategories.contains { $0.name.lowercased() == trimmed.lowercased() }
-                                if !alreadyExists {
-                                    context.insert(Category(name: trimmed))
+
+                if !candidates.isEmpty {
+                    await MainActor.run {
+                        let ctx = ModelContext(container)
+
+                        // Mark note as processed
+                        let predicate = #Predicate<Note> { $0.id == noteId }
+                        if let note = (try? ctx.fetch(FetchDescriptor<Note>(predicate: predicate)))?.first {
+                            note.isProcessed = true
+                        }
+
+                        // Fetch categories again (fresh context)
+                        let existingCats = (try? ctx.fetch(FetchDescriptor<Category>())) ?? []
+
+                        for candidate in candidates {
+                            // Create category if LLM suggests a new one
+                            if let catName = candidate.category {
+                                let trimmed = catName.trimmingCharacters(in: .whitespacesAndNewlines)
+                                if !trimmed.isEmpty && !existingCats.contains(where: { $0.name.lowercased() == trimmed.lowercased() }) {
+                                    ctx.insert(Category(name: trimmed))
                                     print("[WatchConnectivity] New category created: \(trimmed)")
                                 }
                             }
-                        }
 
-                        let action = Action(
-                            title: candidate.title,
-                            detail: candidate.detail,
-                            dueDate: candidate.dueDate,
-                            sourceNoteId: note.id,
-                            categoryName: candidate.category.flatMap {
-                                $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0
-                            }
-                        )
-                        context.insert(action)
-                        NotificationService.shared.scheduleNotification(for: action)
+                            let action = Action(
+                                title: candidate.title,
+                                detail: candidate.detail,
+                                dueDate: candidate.dueDate,
+                                sourceNoteId: noteId,
+                                categoryName: candidate.category.flatMap {
+                                    $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0
+                                }
+                            )
+                            ctx.insert(action)
+                            NotificationService.shared.scheduleNotification(for: action)
+                        }
+                        try? ctx.save()
+                        print("[WatchConnectivity] \(candidates.count) actions saved")
                     }
-                    try? context.save()
-                    print("[WatchConnectivity] \(candidates.count) actions extracted")
+                } else {
+                    await MainActor.run {
+                        let ctx = ModelContext(container)
+                        let predicate = #Predicate<Note> { $0.id == noteId }
+                        if let note = (try? ctx.fetch(FetchDescriptor<Note>(predicate: predicate)))?.first {
+                            note.isProcessed = true
+                            try? ctx.save()
+                        }
+                    }
                 }
             } else {
                 await MainActor.run {
-                    note.isProcessed = true
-                    try? context.save()
+                    let ctx = ModelContext(container)
+                    let predicate = #Predicate<Note> { $0.id == noteId }
+                    if let note = (try? ctx.fetch(FetchDescriptor<Note>(predicate: predicate)))?.first {
+                        note.isProcessed = true
+                        try? ctx.save()
+                    }
                 }
             }
 
-            // Notificatie met notitietekst + badge bijwerken
-            let noteCount = (try? context.fetchCount(FetchDescriptor<Note>())) ?? 1
+            // --- Notification + badge (MainActor) ---
+            let noteCount: Int = await MainActor.run {
+                let ctx = ModelContext(container)
+                return (try? ctx.fetchCount(FetchDescriptor<Note>())) ?? 1
+            }
+
             await MainActor.run {
-                // Verwijder de "bezig met verwerken" notificatie
                 UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["watch-processing"])
 
-                // Notificatie met de notitietekst
                 let notifContent = UNMutableNotificationContent()
                 notifContent.title = actionCount > 0
                     ? "📝 Notitie + \(actionCount) actie\(actionCount == 1 ? "" : "s")"
@@ -138,13 +176,11 @@ final class WatchConnectivityService: NSObject, ObservableObject {
                 notifContent.badge = NSNumber(value: noteCount)
 
                 let req = UNNotificationRequest(
-                    identifier: "note-\(note.id)",
+                    identifier: "note-\(noteId)",
                     content: notifContent,
                     trigger: nil
                 )
                 UNUserNotificationCenter.current().add(req, withCompletionHandler: nil)
-
-                // Badge op het app-icoon bijwerken
                 NotificationService.shared.updateBadge(count: noteCount)
             }
         }
@@ -171,7 +207,7 @@ extension WatchConnectivityService: WCSessionDelegate {
     nonisolated func session(_ session: WCSession, didReceive file: WCSessionFile) {
         print("[WatchConnectivity] ✅ Received file: \(file.fileURL.lastPathComponent)")
 
-        // Tijdelijke "verwerken" notificatie
+        // Immediate "processing" notification
         let processing = UNMutableNotificationContent()
         processing.title = "🎙 Spraaknotitie ontvangen"
         processing.body = "Bezig met transcriberen..."
@@ -181,7 +217,7 @@ extension WatchConnectivityService: WCSessionDelegate {
             withCompletionHandler: nil
         )
 
-        // Kopieer het bestand voordat het systeem het opruimt
+        // Copy file before the system cleans it up
         let dest = FileManager.default.temporaryDirectory
             .appendingPathComponent("watch-\(UUID().uuidString).m4a")
         do {
@@ -195,8 +231,7 @@ extension WatchConnectivityService: WCSessionDelegate {
             print("[WatchConnectivity] ⚠️ modelContainer not set — cannot process audio")
             return
         }
-        let context = ModelContext(container)
-        processReceivedAudio(url: dest, context: context)
+        processReceivedAudio(url: dest, container: container)
     }
 }
 
