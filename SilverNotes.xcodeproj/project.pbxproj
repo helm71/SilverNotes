@@ -497,9 +497,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BKTDN4485W;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SilverNotes gebruikt de microfoon voor het opnemen van voice notities.";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = marcjurriens.SilverNotes;
+				INFOPLIST_FILE = SilverNotesWatchInfo.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -529,9 +527,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BKTDN4485W;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SilverNotes gebruikt de microfoon voor het opnemen van voice notities.";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = marcjurriens.SilverNotes;
+				INFOPLIST_FILE = SilverNotesWatchInfo.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
