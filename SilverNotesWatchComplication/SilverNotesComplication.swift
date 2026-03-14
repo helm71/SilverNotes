@@ -11,18 +11,18 @@ struct ComplicationEntry: TimelineEntry {
 // MARK: - Timeline Provider
 
 struct ComplicationProvider: TimelineProvider {
-    func placeholder(in context: Context) -> ComplicationEntry {
-        ComplicationEntry(date: Date(), newActionCount: 2)
+    nonisolated func placeholder(in context: Context) -> ComplicationEntry {
+        ComplicationEntry(date: Date(), newActionCount: 0)
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (ComplicationEntry) -> Void) {
+    nonisolated func getSnapshot(in context: Context, completion: @escaping (ComplicationEntry) -> Void) {
         completion(ComplicationEntry(date: Date(), newActionCount: 0))
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<ComplicationEntry>) -> Void) {
+    nonisolated func getTimeline(in context: Context, completion: @escaping (Timeline<ComplicationEntry>) -> Void) {
         let entry = ComplicationEntry(date: Date(), newActionCount: 0)
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date()) ?? Date()
-        completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+        let next = Calendar.current.date(byAdding: .minute, value: 15, to: Date()) ?? Date()
+        completion(Timeline(entries: [entry], policy: .after(next)))
     }
 }
 
@@ -45,17 +45,14 @@ struct ComplicationView: View {
         }
     }
 
-    // Simple mic icon — accessoryCircular draws its own circle frame
+    // Rode cirkel met witte S
     private var circularView: some View {
-        VStack(spacing: 2) {
-            Image(systemName: "mic.fill")
-                .font(.system(size: 18, weight: .semibold))
-                .widgetAccentable()
-            if entry.newActionCount > 0 {
-                Text("\(entry.newActionCount)")
-                    .font(.system(size: 9, weight: .bold, design: .rounded))
-                    .widgetAccentable()
-            }
+        ZStack {
+            Circle()
+                .fill(Color.red)
+            Text("S")
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
         }
         .widgetURL(URL(string: "silvernotes://record"))
     }
@@ -64,27 +61,13 @@ struct ComplicationView: View {
         Image(systemName: "mic.fill")
             .font(.system(size: 18, weight: .semibold))
             .widgetAccentable()
-            .widgetLabel {
-                if entry.newActionCount > 0 {
-                    Text("\(entry.newActionCount) nieuw")
-                } else {
-                    Text("SilverNotes")
-                }
-            }
+            .widgetLabel("SilverNotes")
             .widgetURL(URL(string: "silvernotes://record"))
     }
 
     private var inlineView: some View {
-        Label {
-            if entry.newActionCount > 0 {
-                Text("\(entry.newActionCount) nieuwe acties")
-            } else {
-                Text("SilverNotes — opnemen")
-            }
-        } icon: {
-            Image(systemName: "mic.fill")
-        }
-        .widgetURL(URL(string: "silvernotes://record"))
+        Label("SilverNotes opnemen", systemImage: "mic.fill")
+            .widgetURL(URL(string: "silvernotes://record"))
     }
 }
 
