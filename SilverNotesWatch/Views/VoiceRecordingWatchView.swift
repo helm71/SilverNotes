@@ -187,13 +187,6 @@ struct VoiceRecordingWatchView: View {
             return
         }
 
-        guard handler.isPhoneReachable || WCSession.default.activationState == .activated else {
-            resultMessage = "iPhone niet verbonden"
-            resultIsError = true
-            showResult = true
-            return
-        }
-
         handler.sendAudioToPhone(fileURL: url)
         resultMessage = "Verzonden naar iPhone ✓\nWordt verwerkt..."
         resultIsError = false

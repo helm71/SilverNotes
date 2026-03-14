@@ -54,14 +54,36 @@ final class LLMService {
         formatter.formatOptions = [.withInternetDateTime]
         let dateString = formatter.string(from: noteDate)
 
+        let calendar = Calendar.current
+        let weekdaySymbols = ["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"]
+        let weekdayIndex = calendar.component(.weekday, from: noteDate) - 1
+        let todayName = weekdaySymbols[weekdayIndex]
+
+        // Build next-weekday lookup for the prompt
+        var weekdayExamples = ""
+        for offset in 1...7 {
+            let futureDate = calendar.date(byAdding: .day, value: offset, to: noteDate)!
+            let futureName = weekdaySymbols[calendar.component(.weekday, from: futureDate) - 1]
+            let futureDateStr = formatter.string(from: futureDate)
+            weekdayExamples += "  - \(futureName) = \(futureDateStr.prefix(10))\n"
+        }
+
         let instructions = """
         Je bent een assistent die notities analyseert en concrete acties extraheert.
-        De huidige datum en tijd is: \(dateString).
+        De huidige datum en tijd is: \(dateString) (\(todayName)).
+        De komende dagen zijn:
+        \(weekdayExamples)
+        Regels voor datuminterpretatie:
+        - "maandagochtend" → aanstaande maandag om 08:00
+        - "morgenochtend" → morgen om 08:00
+        - "vanavond" → vandaag om 20:00
+        - "ochtend" zonder dag → morgen om 08:00
+        - Als een dag wordt genoemd (bijv. "maandag"), gebruik dan de eerstvolgende toekomstige datum voor die dag uit de lijst hierboven.
+        - Gebruik NOOIT de datum van vandaag als een toekomstige dag wordt bedoeld.
         Geef je antwoord UITSLUITEND als geldig JSON array, geen extra tekst, geen markdown code blocks.
         Gebruik dit exacte JSON formaat:
         [{"title":"Korte actietitel","detail":"extra context of null","dueDate":"ISO8601 datum/tijd of null"}]
         Als er geen acties zijn, geef dan alleen: []
-        Tijden zoals "morgen 10 uur" moeten worden omgezet naar een absolute ISO8601 datum/tijd.
         """
 
         let session = LanguageModelSession(instructions: instructions)
