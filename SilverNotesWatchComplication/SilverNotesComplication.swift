@@ -11,15 +11,15 @@ struct ComplicationEntry: TimelineEntry {
 // MARK: - Timeline Provider
 
 struct ComplicationProvider: TimelineProvider {
-    nonisolated func placeholder(in context: Context) -> ComplicationEntry {
+    func placeholder(in context: Context) -> ComplicationEntry {
         ComplicationEntry(date: Date(), newActionCount: 0)
     }
 
-    nonisolated func getSnapshot(in context: Context, completion: @escaping (ComplicationEntry) -> Void) {
+    func getSnapshot(in context: Context, completion: @escaping (ComplicationEntry) -> Void) {
         completion(ComplicationEntry(date: Date(), newActionCount: 0))
     }
 
-    nonisolated func getTimeline(in context: Context, completion: @escaping (Timeline<ComplicationEntry>) -> Void) {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<ComplicationEntry>) -> Void) {
         let entry = ComplicationEntry(date: Date(), newActionCount: 0)
         let next = Calendar.current.date(byAdding: .minute, value: 15, to: Date()) ?? Date()
         completion(Timeline(entries: [entry], policy: .after(next)))
