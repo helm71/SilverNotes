@@ -45,14 +45,17 @@ struct ComplicationView: View {
         }
     }
 
-    // Rode cirkel met witte S
+    // Mic-icoon met rode opname-stip rechtsonder
     private var circularView: some View {
         ZStack {
+            Image(systemName: "mic.fill")
+                .font(.system(size: 17, weight: .semibold))
+                .widgetAccentable()
+            // Rode stip = opname-indicator
             Circle()
                 .fill(Color.red)
-            Text("S")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .frame(width: 9, height: 9)
+                .offset(x: 11, y: 11)
         }
         .widgetURL(URL(string: "silvernotes://record"))
     }

@@ -27,27 +27,6 @@ struct MainWatchView: View {
                 }
                 .buttonStyle(.plain)
 
-                // Actions summary
-                NavigationLink(destination: ActionListWatchView()) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Acties")
-                                .font(.caption.weight(.medium))
-                            Text("\(handler.actions.filter { $0.status == "new" || $0.status == "open" }.count) actief")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(10)
-                    .background(Color.gray.opacity(0.2))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                }
-                .buttonStyle(.plain)
-
                 if !handler.isPhoneReachable {
                     Label("iPhone niet bereikbaar", systemImage: "iphone.slash")
                         .font(.caption2)

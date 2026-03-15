@@ -156,7 +156,8 @@ struct QuickRecordView: View {
         }
 
         handler.sendAudioToPhone(fileURL: url)
-        phase = .sent
+        WKInterfaceDevice.current().play(.success)  // haptic bevestiging
+        onDismiss()  // direct terug, geen wachttijd
     }
 
     private func formatDuration(_ t: TimeInterval) -> String {
