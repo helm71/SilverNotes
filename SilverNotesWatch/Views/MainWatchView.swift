@@ -46,6 +46,17 @@ struct MainWatchView: View {
                         .font(.caption2)
                         .foregroundStyle(.orange)
                 }
+
+                Button {
+                    exit(0)
+                } label: {
+                    Text("Sluiten")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.plain)
             }
             .padding()
             .navigationTitle("SilverNotes")
