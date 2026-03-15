@@ -54,6 +54,7 @@ final class LLMService {
 
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
+        formatter.timeZone = TimeZone.current          // output local time with offset, e.g. +01:00
         let dateString = formatter.string(from: noteDate)
 
         let calendar = Calendar.current
@@ -144,10 +145,22 @@ final class LLMService {
 
     private func parseDateString(_ string: String?) -> Date? {
         guard let string, string != "null", !string.isEmpty else { return nil }
+
+        // Try standard ISO8601 with timezone (e.g. 2026-03-15T13:00:00+01:00 or Z)
         let iso = ISO8601DateFormatter()
         iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         if let d = iso.date(from: string) { return d }
         iso.formatOptions = [.withInternetDateTime]
-        return iso.date(from: string)
+        if let d = iso.date(from: string) { return d }
+
+        // Fallback: LLM omitted timezone — treat as local time
+        let local = DateFormatter()
+        local.locale = Locale(identifier: "en_US_POSIX")
+        local.timeZone = TimeZone.current
+        for fmt in ["yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm"] {
+            local.dateFormat = fmt
+            if let d = local.date(from: string) { return d }
+        }
+        return nil
     }
 }
