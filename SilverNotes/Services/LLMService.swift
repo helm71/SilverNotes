@@ -88,8 +88,8 @@ final class LLMService {
 
         \(categoriesSection)
 
-        Categorieregels: gebruik alleen een categorie als de gebruiker die expliciet noemt of als het overduidelijk is. Bij twijfel: null. Verzin nooit een categorie.
-        Een bestaande categorie: gebruik EXACT die naam. Een nieuwe: alleen als de gebruiker die letterlijk noemt.
+        Categorieregels: gebruik een categorie als de gebruiker een groep, project, context of categorie noemt waar de actie bij hoort — ook als het woord "categorie" zelf niet valt. Voorbeelden: "voor werk", "voor mijn project Alpha", "thuisklussen", "boodschappen" → gebruik die naam als categorie. Bij twijfel of als er geen groepering in de tekst zit: null.
+        Een bestaande categorie: gebruik EXACT die naam. Een nieuwe: maak die aan als de gebruiker een groepering noemt die er nog niet bij staat.
 
         Geef je antwoord UITSLUITEND als geldig JSON array, geen extra tekst, geen markdown.
         Formaat: [{"title":"...","detail":"... of null","dueDate":"ISO8601 of null","category":"... of null"}]
