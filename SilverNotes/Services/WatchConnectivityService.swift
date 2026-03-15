@@ -164,10 +164,11 @@ final class WatchConnectivityService: NSObject, ObservableObject {
                 return (try? ctx.fetchCount(FetchDescriptor<Note>())) ?? 1
             }
 
+            let finalActionCount = actionCount
             await MainActor.run {
                 let notifContent = UNMutableNotificationContent()
-                notifContent.title = actionCount > 0
-                    ? "📝 Notitie + \(actionCount) actie\(actionCount == 1 ? "" : "s")"
+                notifContent.title = finalActionCount > 0
+                    ? "📝 Notitie + \(finalActionCount) actie\(finalActionCount == 1 ? "" : "s")"
                     : "📝 Nieuwe notitie"
                 notifContent.body = String(noteContent.prefix(150))
                 notifContent.sound = .default
@@ -217,11 +218,13 @@ extension WatchConnectivityService: WCSessionDelegate {
             return
         }
 
-        guard let container = modelContainer else {
-            print("[WatchConnectivity] ⚠️ modelContainer not set — cannot process audio")
-            return
+        Task { @MainActor in
+            guard let container = self.modelContainer else {
+                print("[WatchConnectivity] ⚠️ modelContainer not set — cannot process audio")
+                return
+            }
+            self.processReceivedAudio(url: dest, container: container)
         }
-        processReceivedAudio(url: dest, container: container)
     }
 }
 

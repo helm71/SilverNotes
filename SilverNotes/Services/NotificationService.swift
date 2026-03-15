@@ -126,7 +126,10 @@ extension NotificationService: UNUserNotificationCenterDelegate {
 
         if actionIdentifier == .snooze {
             let title = response.notification.request.content.body
-            rescheduleSnooze(for: response.notification.request.identifier, actionTitle: title, actionId: actionIdString)
+            let identifier = response.notification.request.identifier
+            Task { @MainActor in
+                self.rescheduleSnooze(for: identifier, actionTitle: title, actionId: actionIdString)
+            }
         }
     }
 
