@@ -8,22 +8,36 @@ struct MainWatchView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
-                // Record button
+                // Record button — zelfde stijl als complicatie-icoon
                 Button {
                     showRecording = true
                 } label: {
-                    VStack(spacing: 6) {
-                        Image(systemName: "mic.fill")
-                            .font(.system(size: 24))
-                            .foregroundStyle(.white)
+                    VStack(spacing: 8) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white.opacity(0.15))
+                                .frame(width: 64, height: 64)
+                            Image(systemName: "mic.fill")
+                                .font(.system(size: 26, weight: .semibold))
+                                .foregroundStyle(.white)
+                            // Rode opname-stip rechtsonder
+                            Circle()
+                                .fill(Color.red)
+                                .frame(width: 12, height: 12)
+                                .offset(x: 20, y: 20)
+                        }
                         Text("Opnemen")
-                            .font(.caption2)
-                            .foregroundStyle(.white.opacity(0.8))
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.white.opacity(0.85))
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color.blue)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(.vertical, 12)
+                    .background(Color.black.opacity(0.3))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                    )
                 }
                 .buttonStyle(.plain)
 
