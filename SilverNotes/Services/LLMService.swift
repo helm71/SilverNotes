@@ -83,21 +83,30 @@ final class LLMService {
         De huidige datum en tijd is: \(dateString) (\(todayName)).
         De komende dagen zijn:
         \(weekdayExamples)
+
         Regels voor datuminterpretatie:
-        - "maandagochtend" → aanstaande maandag om 08:00
-        - "morgenochtend" → morgen om 08:00
+        - "vanmiddag om X uur" → vandaag om X:00 (bijv. "vanmiddag om 1 uur" = vandaag 13:00)
+        - "vanmiddag" zonder tijdstip → vandaag om 14:00
         - "vanavond" → vandaag om 20:00
+        - "vanochtend om X uur" → vandaag om dat tijdstip
+        - "morgenochtend" → morgen om 08:00
+        - "morgenmiddag" → morgen om 14:00
+        - "morgenavond" → morgen om 20:00
         - "ochtend" zonder dag → morgen om 08:00
+        - Als ALLEEN een tijdstip wordt genoemd zonder dagaanduiding (bijv. "om 13:00", "om 1 uur") → vandaag op dat tijdstip
+        - Als het genoemde tijdstip vandaag al verstreken is → zelfde tijdstip morgen
         - Als een dag wordt genoemd (bijv. "maandag"), gebruik dan de eerstvolgende toekomstige datum voor die dag uit de lijst hierboven.
-        - Gebruik NOOIT de datum van vandaag als een toekomstige dag wordt bedoeld.
+        - Als er GEEN tijdstip in de tekst staat → gebruik null voor dueDate, stel nooit een standaardtijd in.
 
         \(categoriesSection)
 
         Regels voor categorieën:
-        - Als de actie duidelijk bij een bestaande categorie past, gebruik dan EXACT die naam (hoofdlettergevoelig).
-        - Als uit de tekst duidelijk een nieuwe categorie blijkt die nog niet bestaat, gebruik dan die nieuwe naam.
-        - Als het onduidelijk of twijfelachtig is, gebruik dan null.
-        - Verzin geen categorieën als ze niet duidelijk uit de tekst blijken.
+        - Gebruik ALLEEN een categorie als de gebruiker die EXPLICIET noemt (bijv. "voor werk", "privé") of als de actie 100% overduidelijk bij één categorie hoort.
+        - Als de actie bij meerdere categorieën zou kunnen passen: gebruik null.
+        - Als het ook maar enigszins twijfelachtig is: gebruik null.
+        - Verzin NOOIT een categorie op basis van aanname of gissing — liever null dan fout.
+        - Een bestaande categorie gebruiken: gebruik EXACT die naam (hoofdlettergevoelig).
+        - Een nieuwe categorie aanmaken: alleen als de gebruiker letterlijk een nieuwe categorie noemt die er nog niet is.
 
         Geef je antwoord UITSLUITEND als geldig JSON array, geen extra tekst, geen markdown code blocks.
         Gebruik dit exacte JSON formaat:
