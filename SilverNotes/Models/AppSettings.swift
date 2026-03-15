@@ -16,10 +16,15 @@ final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(speechLocale, forKey: Keys.speechLocale) }
     }
 
+    @Published var llmExtraInstructions: String {
+        didSet { UserDefaults.standard.set(llmExtraInstructions, forKey: Keys.llmExtraInstructions) }
+    }
+
     private enum Keys {
         static let notificationLeadTime = "notificationLeadTime"
         static let snoozeDuration = "snoozeDuration"
         static let speechLocale = "speechLocale"
+        static let llmExtraInstructions = "llmExtraInstructions"
     }
 
     private init() {
@@ -28,5 +33,6 @@ final class AppSettings: ObservableObject {
         let snooze = UserDefaults.standard.integer(forKey: Keys.snoozeDuration)
         self.snoozeDuration = snooze == 0 ? 10 : snooze
         self.speechLocale = UserDefaults.standard.string(forKey: Keys.speechLocale) ?? "nl-NL"
+        self.llmExtraInstructions = UserDefaults.standard.string(forKey: Keys.llmExtraInstructions) ?? ""
     }
 }

@@ -94,6 +94,7 @@ final class LLMService {
         Geef je antwoord UITSLUITEND als geldig JSON array, geen extra tekst, geen markdown.
         Formaat: [{"title":"...","detail":"... of null","dueDate":"ISO8601 of null","category":"... of null"}]
         Geen acties: []
+        \(AppSettings.shared.llmExtraInstructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : "\nAanvullende instructies:\n\(AppSettings.shared.llmExtraInstructions)")
         """
 
         let session = LanguageModelSession(instructions: instructions)

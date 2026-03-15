@@ -112,6 +112,8 @@ struct NoteListView: View {
 
 struct NoteRowView: View {
     let note: Note
+    @Environment(\.modelContext) private var modelContext
+    @State private var isReprocessing = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -132,9 +134,9 @@ struct NoteRowView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                    if !note.isProcessed {
+                    if !note.isProcessed || isReprocessing {
                         Spacer()
-                        Label("Verwerken...", systemImage: "sparkles")
+                        Label(isReprocessing ? "Herverwerken..." : "Verwerken...", systemImage: "sparkles")
                             .font(.caption2)
                             .foregroundStyle(.orange)
                     }
@@ -149,6 +151,23 @@ struct NoteRowView: View {
                FileManager.default.fileExists(atPath: audioURL.path) {
                 AudioPlayerButton(url: audioURL)
             }
+
+            // Reprocess button for notes with text content
+            if note.inputType != .drawing && !note.content.isEmpty {
+                Button {
+                    Task { await reprocess() }
+                } label: {
+                    if isReprocessing {
+                        ProgressView().frame(width: 22, height: 22)
+                    } else {
+                        Image(systemName: "arrow.clockwise.circle")
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .buttonStyle(.plain)
+                .disabled(isReprocessing)
+            }
         }
         .padding(.vertical, 4)
     }
@@ -159,6 +178,51 @@ struct NoteRowView: View {
         case .drawing: .purple
         case .voice: .orange
         }
+    }
+
+    private func reprocess() async {
+        isReprocessing = true
+
+        // Remove existing auto-generated actions for this note
+        let noteId = note.id
+        let existingActions = (try? modelContext.fetch(
+            FetchDescriptor<Action>(predicate: #Predicate { $0.sourceNoteId == noteId })
+        )) ?? []
+        for action in existingActions {
+            NotificationService.shared.cancelNotification(identifier: action.notificationIdentifier)
+            modelContext.delete(action)
+        }
+
+        // Re-run LLM
+        let categories = (try? modelContext.fetch(FetchDescriptor<Category>())) ?? []
+        let knownCategoryNames = categories.map { $0.name }
+        let candidates = await LLMService.shared.extractActions(
+            from: note.content,
+            noteDate: note.createdAt,
+            knownCategories: knownCategoryNames
+        )
+
+        for candidate in candidates {
+            if let catName = candidate.category {
+                let trimmed = catName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty && !categories.contains(where: { $0.name.lowercased() == trimmed.lowercased() }) {
+                    modelContext.insert(Category(name: trimmed))
+                }
+            }
+            let action = Action(
+                title: candidate.title,
+                detail: candidate.detail,
+                dueDate: candidate.dueDate,
+                sourceNoteId: note.id,
+                categoryName: candidate.category.flatMap {
+                    $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0
+                }
+            )
+            modelContext.insert(action)
+            NotificationService.shared.scheduleNotification(for: action)
+        }
+        try? modelContext.save()
+        isReprocessing = false
     }
 }
 

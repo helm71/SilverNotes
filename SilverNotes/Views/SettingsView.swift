@@ -65,6 +65,26 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    ZStack(alignment: .topLeading) {
+                        if settings.llmExtraInstructions.isEmpty {
+                            Text("Aanvullende instructies voor de AI, bijv. 'Antwoord altijd in het Engels' of 'Gebruik alleen de categorieën Werk en Privé'.")
+                                .foregroundStyle(.tertiary)
+                                .font(.body)
+                                .padding(.top, 8)
+                                .padding(.leading, 4)
+                                .allowsHitTesting(false)
+                        }
+                        TextEditor(text: $settings.llmExtraInstructions)
+                            .frame(minHeight: 100)
+                            .font(.body)
+                    }
+                } header: {
+                    Text("AI-instructies")
+                } footer: {
+                    Text("Deze tekst wordt bij elke analyse meegestuurd. Leeg laten voor standaardgedrag.")
+                }
+
+                Section {
                     Button(role: .destructive) {
                         showResetConfirm = true
                     } label: {
