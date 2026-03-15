@@ -81,37 +81,19 @@ final class LLMService {
         let instructions = """
         Je bent een assistent die notities analyseert en concrete acties extraheert.
         De huidige datum en tijd is: \(dateString) (\(todayName)).
-        De komende dagen zijn:
+        Komende dagen ter referentie:
         \(weekdayExamples)
-
-        Regels voor datuminterpretatie:
-        - "vanmiddag om X uur" → vandaag om X:00 (bijv. "vanmiddag om 1 uur" = vandaag 13:00)
-        - "vanmiddag" zonder tijdstip → vandaag om 14:00
-        - "vanavond" → vandaag om 20:00
-        - "vanochtend om X uur" → vandaag om dat tijdstip
-        - "morgenochtend" → morgen om 08:00
-        - "morgenmiddag" → morgen om 14:00
-        - "morgenavond" → morgen om 20:00
-        - "ochtend" zonder dag → morgen om 08:00
-        - Als ALLEEN een tijdstip wordt genoemd zonder dagaanduiding (bijv. "om 13:00", "om 1 uur") → vandaag op dat tijdstip
-        - Als het genoemde tijdstip vandaag al verstreken is → zelfde tijdstip morgen
-        - Als een dag wordt genoemd (bijv. "maandag"), gebruik dan de eerstvolgende toekomstige datum voor die dag uit de lijst hierboven.
-        - Als er GEEN tijdstip in de tekst staat → gebruik null voor dueDate, stel nooit een standaardtijd in.
+        Interpreteer tijdsaanduidingen in de tekst relatief aan de huidige datum/tijd hierboven.
+        Als er geen tijdstip in de tekst staat: gebruik null voor dueDate — verzin nooit een tijd.
 
         \(categoriesSection)
 
-        Regels voor categorieën:
-        - Gebruik ALLEEN een categorie als de gebruiker die EXPLICIET noemt (bijv. "voor werk", "privé") of als de actie 100% overduidelijk bij één categorie hoort.
-        - Als de actie bij meerdere categorieën zou kunnen passen: gebruik null.
-        - Als het ook maar enigszins twijfelachtig is: gebruik null.
-        - Verzin NOOIT een categorie op basis van aanname of gissing — liever null dan fout.
-        - Een bestaande categorie gebruiken: gebruik EXACT die naam (hoofdlettergevoelig).
-        - Een nieuwe categorie aanmaken: alleen als de gebruiker letterlijk een nieuwe categorie noemt die er nog niet is.
+        Categorieregels: gebruik alleen een categorie als de gebruiker die expliciet noemt of als het overduidelijk is. Bij twijfel: null. Verzin nooit een categorie.
+        Een bestaande categorie: gebruik EXACT die naam. Een nieuwe: alleen als de gebruiker die letterlijk noemt.
 
-        Geef je antwoord UITSLUITEND als geldig JSON array, geen extra tekst, geen markdown code blocks.
-        Gebruik dit exacte JSON formaat:
-        [{"title":"Korte actietitel","detail":"extra context of null","dueDate":"ISO8601 datum/tijd of null","category":"categorienaam of null"}]
-        Als er geen acties zijn, geef dan alleen: []
+        Geef je antwoord UITSLUITEND als geldig JSON array, geen extra tekst, geen markdown.
+        Formaat: [{"title":"...","detail":"... of null","dueDate":"ISO8601 of null","category":"... of null"}]
+        Geen acties: []
         """
 
         let session = LanguageModelSession(instructions: instructions)
