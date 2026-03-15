@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import MessageUI
 
 struct ActionDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -14,6 +15,9 @@ struct ActionDetailView: View {
     @State private var editedCategoryName: String?
     @State private var showDeleteConfirm = false
     @State private var showCategoryPicker = false
+    @State private var showMailCompose = false
+    @State private var showMailUnavailable = false
+    @ObservedObject private var settings = AppSettings.shared
 
     init(action: Action) {
         self.action = action
@@ -92,6 +96,33 @@ struct ActionDetailView: View {
                 }
 
                 Section {
+                    Button {
+                        if MailTaskService.shared.canSendMail() {
+                            showMailCompose = true
+                        } else {
+                            showMailUnavailable = true
+                        }
+                    } label: {
+                        HStack {
+                            Label("Mail als taak", systemImage: "envelope")
+                                .foregroundStyle(settings.taskMailRecipient.isEmpty ? .secondary : .primary)
+                            Spacer()
+                            if action.isMailed {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                            }
+                        }
+                    }
+                    .disabled(settings.taskMailRecipient.isEmpty)
+                } footer: {
+                    if settings.taskMailRecipient.isEmpty {
+                        Text("Stel een e-mailadres in via Instellingen.")
+                    } else {
+                        Text("Verstuurd naar \(settings.taskMailRecipient)\(action.isMailed ? " · al verstuurd" : "")")
+                    }
+                }
+
+                Section {
                     Button(role: .destructive) {
                         showDeleteConfirm = true
                     } label: {
@@ -140,6 +171,32 @@ struct ActionDetailView: View {
             }
             .sheet(isPresented: $showCategoryPicker) {
                 CategoryPickerView(selectedCategoryName: $editedCategoryName)
+            }
+            .sheet(isPresented: $showMailCompose) {
+                MailComposeView(
+                    recipient: settings.taskMailRecipient,
+                    subject: "Taak: \(action.title)",
+                    body: MailTaskService.shared.mailBody(for: action),
+                    icsData: MailTaskService.shared.generateICS(for: action),
+                    isPresented: $showMailCompose
+                ) {
+                    action.isMailed = true
+                    try? modelContext.save()
+                }
+            }
+            .alert("Mail niet beschikbaar", isPresented: $showMailUnavailable) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Er is geen e-mailaccount ingesteld op dit apparaat. Ga naar Instellingen → Mail om een account toe te voegen.")
+            }
+            .onAppear {
+                // Auto-mail: open compose automatically for new unmailed actions
+                if settings.autoMailActions
+                    && !action.isMailed
+                    && !settings.taskMailRecipient.isEmpty
+                    && MailTaskService.shared.canSendMail() {
+                    showMailCompose = true
+                }
             }
         }
     }

@@ -46,6 +46,7 @@ final class Action {
     var sourceNoteId: UUID?
     var notificationIdentifier: String
     var categoryName: String?
+    var isMailed: Bool = false
 
     var status: ActionStatus {
         get { ActionStatus(rawValue: statusRaw) ?? .new }

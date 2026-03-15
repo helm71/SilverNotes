@@ -20,11 +20,21 @@ final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(llmExtraInstructions, forKey: Keys.llmExtraInstructions) }
     }
 
+    @Published var taskMailRecipient: String {
+        didSet { UserDefaults.standard.set(taskMailRecipient, forKey: Keys.taskMailRecipient) }
+    }
+
+    @Published var autoMailActions: Bool {
+        didSet { UserDefaults.standard.set(autoMailActions, forKey: Keys.autoMailActions) }
+    }
+
     private enum Keys {
         static let notificationLeadTime = "notificationLeadTime"
         static let snoozeDuration = "snoozeDuration"
         static let speechLocale = "speechLocale"
         static let llmExtraInstructions = "llmExtraInstructions"
+        static let taskMailRecipient = "taskMailRecipient"
+        static let autoMailActions = "autoMailActions"
     }
 
     private init() {
@@ -34,5 +44,7 @@ final class AppSettings: ObservableObject {
         self.snoozeDuration = snooze == 0 ? 10 : snooze
         self.speechLocale = UserDefaults.standard.string(forKey: Keys.speechLocale) ?? "nl-NL"
         self.llmExtraInstructions = UserDefaults.standard.string(forKey: Keys.llmExtraInstructions) ?? ""
+        self.taskMailRecipient = UserDefaults.standard.string(forKey: Keys.taskMailRecipient) ?? ""
+        self.autoMailActions = UserDefaults.standard.bool(forKey: Keys.autoMailActions)
     }
 }

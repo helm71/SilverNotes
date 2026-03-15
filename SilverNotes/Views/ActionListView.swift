@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import MessageUI
 
 struct ActionListView: View {
     @Environment(\.modelContext) private var modelContext
@@ -11,6 +12,10 @@ struct ActionListView: View {
     @State private var showBulkStatusPicker = false
     @State private var showDeleteConfirm = false
     @State private var selectedAction: Action?
+    @State private var mailAction: Action?
+    @State private var showMailCompose = false
+    @State private var showMailUnavailable = false
+    @ObservedObject private var settings = AppSettings.shared
 
     private var filteredActions: [Action] {
         guard let filter = selectedFilter else { return allActions }
@@ -64,6 +69,25 @@ struct ActionListView: View {
                 Button("Annuleer", role: .cancel) {}
             }
         }
+        .sheet(isPresented: $showMailCompose) {
+            if let action = mailAction {
+                MailComposeView(
+                    recipient: settings.taskMailRecipient,
+                    subject: "Taak: \(action.title)",
+                    body: MailTaskService.shared.mailBody(for: action),
+                    icsData: MailTaskService.shared.generateICS(for: action),
+                    isPresented: $showMailCompose
+                ) {
+                    action.isMailed = true
+                    try? modelContext.save()
+                }
+            }
+        }
+        .alert("Mail niet beschikbaar", isPresented: $showMailUnavailable) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Er is geen e-mailaccount ingesteld op dit apparaat.")
+        }
         .onReceive(NotificationCenter.default.publisher(for: .notificationActionReceived)) { notification in
             handleNotificationResponse(notification)
         }
@@ -109,13 +133,26 @@ struct ActionListView: View {
                         }
                         .tint(.blue)
                     }
-                    .swipeActions(edge: .trailing) {
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
                             NotificationService.shared.cancelNotification(identifier: action.notificationIdentifier)
                             modelContext.delete(action)
                             try? modelContext.save()
                         } label: {
                             Label("Verwijder", systemImage: "trash")
+                        }
+                        if !settings.taskMailRecipient.isEmpty {
+                            Button {
+                                if MailTaskService.shared.canSendMail() {
+                                    mailAction = action
+                                    showMailCompose = true
+                                } else {
+                                    showMailUnavailable = true
+                                }
+                            } label: {
+                                Label("Mail", systemImage: action.isMailed ? "envelope.badge.fill" : "envelope")
+                            }
+                            .tint(.indigo)
                         }
                     }
             }

@@ -85,6 +85,19 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    TextField("E-mailadres ontvanger", text: $settings.taskMailRecipient)
+                        .keyboardType(.emailAddress)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                    Toggle("Automatisch mailen bij nieuwe actie", isOn: $settings.autoMailActions)
+                        .disabled(settings.taskMailRecipient.isEmpty)
+                } header: {
+                    Text("E-mail integratie")
+                } footer: {
+                    Text("Acties worden als taak (.ics) gemaild via de Mail-app. Werkt met Outlook, Exchange en Apple Mail. Bij 'Automatisch mailen' opent de Mail-app zodra je een nieuwe actie opent.")
+                }
+
+                Section {
                     Button(role: .destructive) {
                         showResetConfirm = true
                     } label: {
